@@ -1,0 +1,98 @@
+<job id="main">
+	<script language="VBScript">
+ 
+ 	Const ofnAllowMultiSelect = &H200
+	Const ofnCreatePrompt = &H2000
+	Const ofnFileMustExist = &H1000
+	Const ofnHideReadOnly = &H4
+	Const ofnNoNetworkButton = &H20000
+	Const ofnNoReadOnlyReturn = &H8000
+	Const ofnNoTestfileCreate = &H10000
+	Const ofnNoValidate = &H100
+	Const ofnOverwritePrompt = &H2
+	Const ofnPathMustExist = &H800
+	Const ofnReadOnly = &H1
+	Const ofnShareAware = &H4000
+	Const ofnExplorer = &H80000
+	Const ofnNochangedir = &H8
+
+	Const MY_DOCUMENTS = &H5&
+	Const MY_PICTURES = &H27&
+
+    Set WshShell = WScript.CreateObject("WScript.Shell")
+	Set objShell = CreateObject("Shell.Application")
+	Set objFolder = objShell.Namespace(MY_PICTURES)
+	
+	On Error Resume Next    ' Retarde la récupération d'erreur.
+	Set oComDlg = CreateObject("MSComDlg.CommonDialog")
+   
+    Dim pegaseApp, pegaseAppWasNotRunning
+    Call ConnectToServer("PegasePro.Application.1", pegaseApp, pegaseAppWasNotRunning)
+    
+	If pegaseApp Is Nothing Then
+		MsgBox ("Error # " & CStr(Err.Number) & " " & Err.Description)
+	Else
+	   If oComDlg Is Nothing Then
+	   		path_name = InputBox("Please select the source image file")
+	   Else
+			With oComDlg
+		     	.DialogTitle = "Pegase Pro: Please select the source image file"
+				.InitDir = objFolder.Self.Path
+				.Filter = "Image|*.bmp;*.jpg;*.tif"
+				.FilterIndex = 1
+				.MaxFileSize = 260
+		'		.FileName = "*.*"
+				.Flags = ofnFileMustExist Or ofnExplorer Or ofnNochangedir Or ofnHideReadOnly
+				.ShowOpen
+			End With                        
+			path_name = oComDlg.filename
+		End If
+		if path_name = "" Then
+		      WScript.quit 0
+		End If
+		
+		Set opticalSystems = pegaseApp.OpticalSystems
+     	If Not opticalSystems Is Nothing Then
+  			Set currentSystem = opticalSystems.CurrentSystem
+         	sep = " - "
+     		If Not currentSystem Is Nothing Then
+             	result = currentSystem.Name & sep & currentSystem.CurrentOptical & vbCr
+       			WshShell.Popup result, 30, "Pegase Pro: Current Optical System", 0
+			End If
+
+			index = 0
+			result = "Select the index of the target system name : "  & vbCr  & vbCr
+			For Each opticalSystem In opticalSystems
+             	result = result & index & sep & opticalSystem.Name & vbCr
+             	index = index + 1
+			Next
+			index = CInt(InputBox(result, "Pegase Pro: Selection of the target Optical System", 0))
+			
+			Set opticalSystem = opticalSystems(index)
+     		If Not opticalSystem Is Nothing Then
+				index = 0
+				result = "Target System selected : " & opticalSystem.Name & vbCr & vbCr & "Select the index of the target objective name :"  & vbCr  & vbCr
+				For Each objective In opticalSystem.ObjectiveNames
+	             	result = result & index & sep & objective & vbCr
+	             	index = index + 1
+				Next
+				index = CInt(InputBox(result, "Pegase Pro: Selection of the target Optical System", 0))
+     		End If
+			
+						
+		End If
+    End If
+
+	Sub ConnectToServer(progId, server, serverWasNotRunning)
+		' Test pour déterminer si une copie du Server est déjà en exécution.
+		On Error Resume Next    ' Retarde la récupération d'erreur.
+		' La fonction Getobject appelée sans le premier argument renvoie une référence à une occurrence de
+		' l'application. Si l'application n'est pas en exécution, une erreur se produit. Notez la virgule
+		' utilisée en tant que premier espace réservé d'argument.
+		Set server = GetObject(, progId)
+		If Err.Number <> 0 Then serverWasNotRunning = True
+		Err.Clear   ' Efface l'objet Err si une erreur s'est produite.
+		If serverWasNotRunning = True Then Set server = CreateObject(progId)
+	End Sub
+	</script>
+</job>

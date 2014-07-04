@@ -1,0 +1,33 @@
+<job id="main">
+	<script language="VBScript">
+    
+    Dim progResApp, focusApp
+    
+    Call ConnectToServer("Wolfie.Document", progResApp)
+    If Not progResApp Is Nothing Then
+       Call ConnectToServer("Focus.Document", focusApp)
+       If Not focusApp Is Nothing Then
+            focusApp.ResetInput
+            For Each slide In progResApp.Track
+                If slide.Exists("Path") Then
+                    focusApp.AddFile slide("Path"), True
+                End If
+            Next
+            focusApp.Run
+        End If
+    End If
+
+	Sub ConnectToServer(progId, server)
+		On Error Resume Next    ' Retarde la récupération d'erreur.
+		' La fonction Getobject appelée sans le premier argument renvoie une référence à une occurrence de
+		' l'application. Si l'application n'est pas en exécution, une erreur se produit. Notez la virgule
+		' utilisée en tant que premier espace réservé d'argument.
+		Set server = GetObject(, progId)
+		If Err.Number <> 0 Then
+	        Err.Clear   ' Efface l'objet Err si une erreur s'est produite.
+            Set server = CreateObject(progId)
+        End If
+	End Sub
+
+	</script>
+</job>

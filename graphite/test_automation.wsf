@@ -1,0 +1,58 @@
+<job id="main">
+    <script language="VBScript">
+ 
+	Const ofnAllowMultiSelect = &H200
+	Const ofnCreatePrompt = &H2000
+	Const ofnFileMustExist = &H1000
+	Const ofnHideReadOnly = &H4
+	Const ofnNoNetworkButton = &H20000
+	Const ofnNoReadOnlyReturn = &H8000
+	Const ofnNoTestfileCreate = &H10000
+	Const ofnNoValidate = &H100
+	Const ofnOverwritePrompt = &H2
+	Const ofnPathMustExist = &H800
+	Const ofnReadOnly = &H1
+	Const ofnShareAware = &H4000
+	Const ofnExplorer = &H80000
+	Const ofnNochangedir = &H8
+
+	Const MY_DOCUMENTS = &H5&
+	Const MY_PICTURES = &H27&
+
+	Set graphiteApp = CreateObject("Graphite.Document")
+    	Set WshShell = WScript.CreateObject("WScript.Shell")
+	Set objShell = CreateObject("Shell.Application")
+ 	Set oComDlg = CreateObject("MSComDlg.CommonDialog")
+  
+	If Not graphiteApp Is Nothing Then
+  	
+	        Set objFolder = objShell.Namespace(MY_DOCUMENTS)
+		
+		oComDlg.DialogTitle = "Graphite: Please select a settings file"
+		oComDlg.InitDir     = objFolder.Self.Path
+		oComDlg.Filter      = "Settins(*.xml)|*.xml"
+		oComDlg.FilterIndex = 1
+		oComDlg.MaxFileSize = 260
+		oComDlg.Flags       = ofnExplorer Or ofnNochangedir Or ofnHideReadOnly Or ofnOverwritePrompt
+ 	
+		ret = oComDlg.ShowSave
+
+		MsgBox("Return code = " & CStr(ret))
+		
+		graphiteApp.SaveSettings oComDlg.filename
+
+		oComDlg.DialogTitle = "Graphite: Please select an image file"
+		oComDlg.oComDlg.InitDir = objMyPicturesFolder.Self.Path
+		oComDlg.oComDlg.Filter = "Image|*.bmp;*.jpg;*.tif;*.png|BMP (*.bmp)|*.bmp|JPEG Files (*.jpg)|*.jpg|TIFF Files (*.tif)|*.tif"
+		oComDlg.FilterIndex = 1
+		oComDlg.oComDlg.MaxFileSize = 260
+		oComDlg.Flags = ofnFileMustExist Or ofnExplorer Or ofnNochangedir Or ofnHideReadOnly
+		
+	'	oComDlg.ShowOpen
+                    
+
+	'	graphiteApp.AddImage oComDlg.filename
+	End If
+
+    </script>
+</job>

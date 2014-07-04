@@ -1,0 +1,26 @@
+<job id="main">
+	<script language="VBScript">
+
+	Dim WshShell, BtnCode
+	Set WshShell = WScript.CreateObject("WScript.Shell")
+
+	BtnCode = WshShell.Popup("Voulez vous réinitialiser l'interface graphique de l'application Wolfie ?", 
+	30, "Répondez à la question:", 4 + 32)
+	If BtnCode = 6 Then
+		WshShell.RegDelete("HKCU\Software\2i System\Wolfie\ProfUIS253\PageNavigator\")
+		WshShell.RegDelete("HKCU\Software\2i System\Wolfie\ProfUIS253\Profiles\Main-Profile\CommandManager\block_0x00000000\")
+		WshShell.RegDelete("HKCU\Software\2i System\Wolfie\ProfUIS253\Profiles\Main-Profile\CommandManager\")
+		WshShell.RegDelete("HKCU\Software\2i System\Wolfie\ProfUIS253\Profiles\Main-Profile\BarPos-Normal\ControlBar\block_0x00000000\")
+		WshShell.RegDelete("HKCU\Software\2i System\Wolfie\ProfUIS253\Profiles\Main-Profile\BarPos-Normal\ControlBar\")
+		WshShell.RegDelete("HKCU\Software\2i System\Wolfie\ProfUIS253\Profiles\Main-Profile\BarPos-Normal\")
+		WshShell.RegDelete("HKCU\Software\2i System\Wolfie\ProfUIS253\Profiles\Main-Profile\BarPos-FullScreen\ControlBar\block_0x00000000\")
+		WshShell.RegDelete("HKCU\Software\2i System\Wolfie\ProfUIS253\Profiles\Main-Profile\BarPos-FullScreen\ControlBar\")
+		WshShell.RegDelete("HKCU\Software\2i System\Wolfie\ProfUIS253\Profiles\Main-Profile\BarPos-FullScreen\")
+		WshShell.RegDelete("HKCU\Software\2i System\Wolfie\ProfUIS253\Profiles\Main-Profile\")
+		WshShell.RegDelete("HKCU\Software\2i System\Wolfie\ProfUIS253\Profiles\")
+		WshShell.RegDelete("HKCU\Software\2i System\Wolfie\ProfUIS253\")
+	  BtnCode = WshShell.Popup("Réinitialisation terminée.", 10, "Message:", 64)
+	End If
+
+	</script>
+</job>

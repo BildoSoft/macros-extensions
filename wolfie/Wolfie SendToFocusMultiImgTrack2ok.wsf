@@ -1,0 +1,31 @@
+<job id="main">
+	<script language="VBScript">
+
+    
+    Dim wolfieApp, birdieServerWasNotRunning
+    Call ConnectToServer("Wolfie.Document", wolfieApp, birdieServerWasNotRunning)
+    Dim focusApp, focusServerWasNotRunning
+    Call ConnectToServer("Focus.Document", focusApp, focusServerWasNotRunning)
+    
+    If Not wolfieApp Is Nothing Then
+        focusApp.ResetInput
+ 
+	Set trackItems = wolfieApp.GetSelectedTrackItems
+		For Each trackItemId In trackItems
+			szFilePath = wolfieApp.GetTrackImageFilePath(trackItemId)
+			focusApp.AddFile szFilePath, True					
+		Next
+						
+       focusApp.Run
+					
+	End If
+
+	Sub ConnectToServer(progId, server, serverWasNotRunning)
+		On Error Resume Next
+		Set server = GetObject(, progId)
+		If Err.Number <> 0 Then serverWasNotRunning = True
+		Err.Clear   
+		If serverWasNotRunning = True Then Set server = CreateObject(progId)
+	End Sub
+	</script>
+</job>

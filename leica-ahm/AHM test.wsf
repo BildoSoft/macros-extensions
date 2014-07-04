@@ -1,0 +1,40 @@
+<job id="main">
+
+    <script language="VBScript">
+    Dim WshShell
+    Set WshShell = WScript.CreateObject("WScript.Shell")
+
+    Dim ahm_service
+    Set ahm_service = CreateObject("ahm_manager.Service")
+
+    If Not ahm_service Is Nothing Then
+       status = ahm_service.Connect("")
+       If status = True Then
+           Dim ahm_unit
+           Set ahm_unit = ahm_service.GetBasicControl("MICROSCOPE_MOTORZOOM")
+           If Not ahm_unit Is Nothing Then
+	        nObjectiveIndex = ahm_unit.ControlValue
+            Dim ahm_opticalsystems
+            On Error Resume Next    ' Retarde la récupération d'erreur.
+            Set ahm_opticalsystems = ahm_service.LoadOpticalSystems("opticalsystems.xml")
+            If Not ahm_opticalsystems Is Nothing Then
+                Dim ahm_opticalsystem
+                On Error Resume Next    ' Retarde la récupération d'erreur.
+                Set ahm_opticalsystem = ahm_opticalsystems.Item(nObjectiveIndex)
+                If Not ahm_opticalsystem Is Nothing Then
+                     WshShell.Popup ahm_opticalsystem.SystemName & " : " & ahm_opticalsystem.ObjectiveName, 120, "ahm_manager.Service : SUCCESS", 0
+                End If
+            Else
+               WshShell.Popup "Can't load opticalsystems.xml.", 20, "ahm_manager.Service : ERROR ", 0
+            End If
+           Else
+                WshShell.Popup "Can't connect MICROSCOPE_MOTORZOOM unit.", 20, "ahm_manager.Service : ERROR ", 0
+           End If
+       Else
+         WshShell.Popup "Can't connect to LEICA Device.", 20, "ahm_manager.Service : ERROR ", 0
+       End If
+    End If
+
+    </script>
+
+</job>

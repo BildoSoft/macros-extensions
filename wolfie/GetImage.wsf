@@ -1,0 +1,67 @@
+<job id="main">
+    <script language="VBScript">
+    Dim objet_fso, path_name
+    Set objet_fso = CreateObject("Scripting.FileSystemObject")
+
+    Dim wolfieApp, birdieServerWasNotRunning
+    Set wolfieApp = CreateObject("Wolfie.Document")
+ '   Call ConnectToServer("Wolfie.Document", wolfieApp, birdieServerWasNotRunning)
+
+    If Not wolfieApp Is Nothing Then
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image1.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image2.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image3.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image4.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image5.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image6.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image7.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image8.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image9.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image10.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image11.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image12.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image13.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image14.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image15.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image16.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image17.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image18.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image19.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image20.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image21.jpg")
+        wolfieApp.GetImageToFile szFilePath
+        szFilePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image22.jpg")
+        wolfieApp.GetImageToFile szFilePath
+    End If
+
+    Sub ConnectToServer(progId, server, serverWasNotRunning)
+        On Error Resume Next
+        Set server = GetObject(, progId)
+        If Err.Number <> 0 Then serverWasNotRunning = True
+        Err.Clear   
+        If serverWasNotRunning = True Then Set server = CreateObject(progId)
+    End Sub
+    </script>
+</job>

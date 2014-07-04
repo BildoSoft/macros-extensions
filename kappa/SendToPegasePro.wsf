@@ -1,0 +1,52 @@
+<job id="main">
+    <script language="VBScript">
+    Dim pegaseApp, pegaseAppWasNotRunning
+    Call ConnectToServer("PegasePro.Application.1", pegaseApp, pegaseAppWasNotRunning)
+
+    Dim objet_fso, path_name
+    Set objet_fso = CreateObject("Scripting.FileSystemObject")
+
+    Dim captureApp, captureAppWasNotRunning
+    Call ConnectToServer("KappaCamStudio.Document", captureApp, captureAppWasNotRunning)
+
+    If Not captureApp Is Nothing Then
+            Set pgInsertDialogBox = pegaseApp.GetDocInsertDialogBox
+            If Not pgInsertDialogBox Is Nothing Then
+                If pgInsertDialogBox.Execute() = 1 Then
+                    Set pgFormTemplate = pgInsertDialogBox.GetFormTemplate
+                    If Not pgFormTemplate Is Nothing Then
+                        filePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image.bmp")
+                        status = captureApp.GetImage(filePath)
+                        If status = True Then
+                            Set pgDocument = pegaseApp.CreateDocumentEx(pgFormTemplate, filePath)
+                            If Not pgDocument Is Nothing Then
+                                Set opticalSystems = pegaseApp.OpticalSystems
+                                If Not opticalSystems Is Nothing Then
+                                   ' Get the current optical system
+                                    strSystemName = opticalSystems.CurrentSystem.Name
+                                    strObjectiveName = opticalSystems.CurrentSystem.CurrentOptical
+                                    ' Insert a graphical scale in the image of the document file
+                                    pgDocument.InsertScale strSystemName, strObjectiveName
+                                End If
+                                Set pgActiveSecion = pegaseApp.ActiveSection
+                                If Not pgActiveSecion Is Nothing Then
+                                    pgActiveSecion.AddDocument pgDocument
+                                End If
+                            End If
+                        End If
+                        objet_fso.DeleteFile filePath
+                        pegaseApp.RefreshActiveSection
+                    End If
+                End If
+            End If
+        End If
+
+    Sub ConnectToServer(progId, server, serverWasNotRunning)
+        On Error Resume Next
+        Set server = GetObject(, progId)
+        If Err.Number <> 0 Then serverWasNotRunning = True
+        Err.Clear   
+        If serverWasNotRunning = True Then Set server = CreateObject(progId)
+    End Sub
+    </script>
+</job>

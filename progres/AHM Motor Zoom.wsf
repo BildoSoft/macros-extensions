@@ -1,0 +1,34 @@
+﻿<job id="main">
+
+	<script language="VBScript">
+
+	Dim WshShell
+	Set WshShell = WScript.CreateObject("WScript.Shell")
+
+    Dim objet_fso, path_name
+    Set objet_fso = CreateObject("Scripting.FileSystemObject")
+	
+	Dim ahm_service
+	Set ahm_service = CreateObject("ahm_tools.Service")
+ 
+ 
+
+		If Not ahm_service Is Nothing Then
+			status = ahm_service.Connect("DEMO-DM6000B")
+			If status = True Then
+				Dim ahm_unit
+				Set ahm_unit = ahm_service.GetBasicControl("MICROSCOPE_NOSEPIECE")
+				If Not ahm_unit Is Nothing Then
+					nObjectiveIndex = ahm_unit.ControlValue
+					WshShell.Popup " ObjectiveIndex : " & nObjectiveIndex, 120, "AHM Sync Pegase Pro Current Optical System", 0
+                Else
+                    WshShell.Popup "Can't connect MICROSCOPE_MOTORZOOM unit.", 120, "ahm_tools.Service : ERROR ", 0
+                End If
+            Else
+               WshShell.Popup "Can't connect to LEICA Device.", 120, "ahm_tools.Service : ERROR ", 0
+			End If
+		End If
+		 
+	</script>
+
+</job>

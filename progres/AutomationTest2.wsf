@@ -1,0 +1,71 @@
+<job id="main">
+
+    <script language="VBScript">
+    Dim WshShell, BtnCode
+    Set WshShell = WScript.CreateObject("WScript.Shell")
+
+    Dim objet_fso, path_name
+    Set objet_fso = CreateObject("Scripting.FileSystemObject")
+
+    Dim captureApp, captureAppWasNotRunning
+    Call ConnectToServer("CameraStudio.Document", captureApp, captureAppWasNotRunning)
+
+    If Not captureApp Is Nothing Then
+
+          sAns = ""
+          For Each prop In captureApp.ImageProps
+            sAns = sAns & CStr(prop.Ident) & " : " &CStr(prop.Name) & " = " & CStr(prop.Value)  & vbCr
+          Next
+          WshShell.Popup sAns, 120, "GetImage Properties ", 0
+          
+          sAns = "--- Image Property Names ---" & vbCr
+          For Each name In captureApp.ImageProps.Names
+             sAns = sAns & CStr(name) & vbCr
+          Next
+          sAns = sAns & "--- Image Property Values ---" & vbCr
+          For Each value In captureApp.ImageProps.Values
+             sAns = sAns & CStr(value) & vbCr
+          Next
+          WshShell.Popup sAns, 120, "Image Properties", 0
+      
+         filePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image.jpg")
+         If captureApp(filePath) Then
+           WshShell.Popup filePath, 120, "Get Image to ", 0
+ '          objet_fso.DeleteFile filePath
+         End If
+
+         sAns = ""
+         For Each propSet In captureApp.Track
+           If propSet.Exists("Path") Then
+              sAns = sAns & CStr(propSet("Path")) & vbCr
+           End If
+        Next
+        WshShell.Popup sAns, 120, "Track Item Paths ", 0
+        
+        Dim track
+        Set track = captureApp.Track
+        If Not track Is Nothing Then
+          sAns = ""
+          For Each index In track.Selection
+            For Each prop In track(index)
+                sAns = sAns & CStr(prop.Ident) & " : " &CStr(prop.Name) & " = " & CStr(prop.Value)  & vbCr
+            Next
+         '   If track(index).Exists("Path") Then
+         '       sAns = sAns & CStr(track(index)("Path")) & vbCr
+         '    End If
+          Next
+          WshShell.Popup sAns, 120, "Track Selection Properties ", 0
+        End If
+
+    End If
+
+    Sub ConnectToServer(progId, server, serverWasNotRunning)
+        On Error Resume Next
+        Set server = GetObject(, progId)
+        If Err.Number <> 0 Then serverWasNotRunning = True
+        Err.Clear   
+        If serverWasNotRunning = True Then Set server = CreateObject(progId)
+    End Sub
+    </script>
+
+</job>

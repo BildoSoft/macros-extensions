@@ -1,0 +1,42 @@
+<job id="main">
+	<script language="VBScript">
+    Dim pegaseApp, pegaseAppWasNotRunning
+    Call ConnectToServer("PegasePro.Application.1", pegaseApp, pegaseAppWasNotRunning)
+    
+    Dim birdieApp, birdieServerWasNotRunning
+    Call ConnectToServer("Birdie.Document", birdieApp, birdieServerWasNotRunning)
+    
+    If Not birdieApp Is Nothing Then
+			Set trackItems = birdieApp.GetTrackItems
+			Set pgInsertDialogBox = pegaseApp.GetDocInsertDialogBox
+			If Not pgInsertDialogBox Is Nothing Then
+				If pgInsertDialogBox.Execute() = 1 Then
+					Set pgFormTemplate = pgInsertDialogBox.GetFormTemplate
+					If Not pgFormTemplate Is Nothing Then
+						For Each trackItem In trackItems
+							Dim szFilePath
+							szFilePath = birdieApp.GetTrackImageFilePath(trackItem)
+							birdieApp.GetTrackImageToFile trackItem, szFilePath
+							Set pgDocument = pegaseApp.CreateDocumentEx(pgFormTemplate, szFilePath)
+							If Not pgDocument Is Nothing Then
+								Set pgActiveSecion = pegaseApp.ActiveSection
+								If Not pgActiveSecion Is Nothing Then
+									pgActiveSecion.AddDocument pgDocument
+								End If
+							End If
+						Next
+						pegaseApp.RefreshActiveSection
+					End If
+				End If
+			End If
+		End If
+
+	Sub ConnectToServer(progId, server, serverWasNotRunning)
+		On Error Resume Next
+		Set server = GetObject(, progId)
+		If Err.Number <> 0 Then serverWasNotRunning = True
+		Err.Clear   
+		If serverWasNotRunning = True Then Set server = CreateObject(progId)
+	End Sub
+	</script>
+</job>

@@ -1,0 +1,12 @@
+<job id="main">
+    <script language="VBScript">
+
+    Dim wolfieApp
+    Set wolfieApp = CreateObject("Wolfie.Document")
+ 
+    If Not wolfieApp Is Nothing Then
+		WScript.Echo "System : " + wolfieApp.SystemName + "   Objective : " + wolfieApp.ObjectiveName
+	 End If
+
+     </script>
+</job>

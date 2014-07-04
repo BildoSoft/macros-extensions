@@ -1,0 +1,145 @@
+<job id="main">
+	<script language="VBScript">
+ 
+ 	Const ofnAllowMultiSelect = &H200
+	Const ofnCreatePrompt = &H2000
+	Const ofnFileMustExist = &H1000
+	Const ofnHideReadOnly = &H4
+	Const ofnNoNetworkButton = &H20000
+	Const ofnNoReadOnlyReturn = &H8000
+	Const ofnNoTestfileCreate = &H10000
+	Const ofnNoValidate = &H100
+	Const ofnOverwritePrompt = &H2
+	Const ofnPathMustExist = &H800
+	Const ofnReadOnly = &H1
+	Const ofnShareAware = &H4000
+	Const ofnExplorer = &H80000
+	Const ofnNochangedir = &H8
+
+	Const MY_DOCUMENTS = &H5&
+	Const MY_PICTURES = &H27&
+
+    Set WshShell = WScript.CreateObject("WScript.Shell")
+	Set objShell = CreateObject("Shell.Application")
+	
+	On Error Resume Next    ' Retarde la récupération d'erreur.
+	Set oComDlg = CreateObject("MSComDlg.CommonDialog")
+   
+    Dim pegaseApp, pegaseAppWasNotRunning
+    Call ConnectToServer("PegasePro.Application.1", pegaseApp, pegaseAppWasNotRunning)
+    
+	If Not pegaseApp Is Nothing Then
+	   If Not oComDlg Is Nothing Then
+	        Set objMyPicturesFolder = objShell.Namespace(MY_PICTURES)
+			With oComDlg
+		     	.DialogTitle = "Pegase Pro: Please select the source image file"
+				.InitDir = objMyPicturesFolder.Self.Path
+				.Filter = "Image|*.bmp;*.jpg;*.tif"
+				.FilterIndex = 1
+				.MaxFileSize = 260
+		'		.FileName = "*.*"
+				.Flags = ofnFileMustExist Or ofnExplorer Or ofnNochangedir Or ofnHideReadOnly
+				.ShowOpen
+			End With                        
+			strImageFilePath = oComDlg.filename
+		    if strImageFilePath = "" Then
+		        WScript.quit 0
+		    End If
+		
+            ' Call the insert dialog box from the pegase pro server					    
+            Set pgInsertDialogBox = pegaseApp.GetDocInsertDialogBox
+            If Not pgInsertDialogBox Is Nothing Then
+                Set pgFormTemplate = pgInsertDialogBox.GetFormTemplate
+                If Not pgFormTemplate Is Nothing Then
+                    ' Set some field value of the document form with environment variables
+                    pgFormTemplate.SetValue "Title", "%FILENAME%"
+                    pgFormTemplate.SetValue "UserField01", "%OS%"
+                    pgFormTemplate.SetValue "UserField02", "%PROCESSOR_IDENTIFIER%"
+				
+				    ' Show the dialog box en wait the return value
+				    If pgInsertDialogBox.Execute() = 1 Then
+				        ' Create the new pegase pro document from the image file and the form template
+                        Set pgDocument = pegaseApp.CreateDocumentEx(pgFormTemplate, strImageFilePath)
+                        If Not pgDocument Is Nothing Then
+                            ' Get the desired optical system
+	                        Set opticalSystems = pegaseApp.OpticalSystems
+	                        If Not opticalSystems Is Nothing Then
+		                        Call GetOpticalSystem(opticalSystems, strMyOpticalSystem, strMyObjective)
+                            End If
+                            
+                            ' Set the desired optical system
+                            pgDocument.SetCalibration strMyOpticalSystem, strMyObjective
+
+                            ' Add the new document to the active section
+                            Set pgActiveSecion = pegaseApp.ActiveSection
+                            If Not pgActiveSecion Is Nothing Then
+                                pgActiveSecion.AddDocument pgDocument
+                                ' Refresh the album display
+                                pegaseApp.RefreshActiveSection
+                            End If
+                        End If
+                    End If
+			    End If
+ 		    End If
+        Else
+            MsgBox ("Error # " & CStr(Err.Number) & " " & Err.Description)
+        End If
+    Else
+        MsgBox ("Error # " & CStr(Err.Number) & " " & Err.Description)
+    End If
+
+	Sub ConnectToServer(progId, server, serverWasNotRunning)
+		' Test pour déterminer si une copie du Server est déjà en exécution.
+		On Error Resume Next    ' Retarde la récupération d'erreur.
+		' La fonction Getobject appelée sans le premier argument renvoie une référence à une occurrence de
+		' l'application. Si l'application n'est pas en exécution, une erreur se produit. Notez la virgule
+		' utilisée en tant que premier espace réservé d'argument.
+		Set server = GetObject(, progId)
+		If Err.Number <> 0 Then serverWasNotRunning = True
+		Err.Clear   ' Efface l'objet Err si une erreur s'est produite.
+		If serverWasNotRunning = True Then Set server = CreateObject(progId)
+	End Sub
+	
+	Sub GetOpticalSystem(opticalSystems, strSelectedSystem, strSelectedObjective)
+        If Not opticalSystems Is Nothing Then
+            ' Save the current optical system
+            Set saveSystem = opticalSystems.CurrentSystem
+
+            ' Build and show the optical system selection dialog box  
+		    sep = " - "
+		    index = 0
+		    result = "Please select the index of the target system name : "  & vbCr  & vbCr
+		    For Each opticalSystem In opticalSystems
+         	    result = result & index & sep & opticalSystem.Name & vbCr
+         	    index = index + 1
+		    Next
+		    index = InputBox(result, "Pegase Pro: Target Optical System (system)", 0)
+		    
+		    if index <> "" Then
+		        ' Set the current optical system
+		        opticalSystems.SetCurrentSystem(CInt(index))
+		        Set currentSystem = opticalSystems.CurrentSystem
+ 		        If Not currentSystem Is Nothing Then
+		            strSelectedSystem = currentSystem.Name
+		            strSelectedObjective = currentSystem.CurrentOptical
+                    ' Build and show the objective selection dialog box  
+			        index = 0
+			        result = "Target System selected : " & strSelectedSystem & vbCr & vbCr & "Please select the index of the target objective name :"  & vbCr  & vbCr
+			        For Each objective In currentSystem.ObjectiveNames
+             	        result = result & index & sep & objective & vbCr
+             	        index = index + 1
+			        Next
+			        index = InputBox(result, "Pegase Pro: Target Optical System (lens)", 0)
+			        If index <> "" Then
+		                ' Set the current objective (lens)
+                        currentSystem.SetCurrentOptical(CInt(index))
+ 		                strSelectedObjective = currentSystem.CurrentOptical
+                   End If
+                End If
+            End If
+            ' Restore the current optical system
+            opticalSystems.SetCurrentSystem(saveSystem.Name)
+       End If
+	End Sub
+    </script>
+</job>

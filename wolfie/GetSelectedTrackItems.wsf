@@ -1,0 +1,17 @@
+<job id="main">
+    <script language="VBScript">
+    Dim objet_fso, path_name
+    Set objet_fso = CreateObject("Scripting.FileSystemObject")
+
+    Dim wolfieApp
+    Set wolfieApp = CreateObject("Wolfie.Document")
+ 
+    If Not wolfieApp Is Nothing Then
+		Set trackItems = wolfieApp.GetTrackItems
+		For Each trackItemId In trackItems
+			szFilePath = wolfieApp.GetTrackImageFilePath(trackItemId)
+			WScript.Echo szFilePath
+       Next
+    End If
+     </script>
+</job>

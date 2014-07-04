@@ -1,0 +1,102 @@
+<job id="main">
+
+	<script language="VBScript">
+
+	Dim WshShell
+	Set WshShell = WScript.CreateObject("WScript.Shell")
+
+    Dim objet_fso, path_name
+    Set objet_fso = CreateObject("Scripting.FileSystemObject")
+	
+	Dim ahm_service
+	Set ahm_service = CreateObject("ahm_tools.Service")
+ 
+	Dim pegaseApp
+    Set pegaseApp = Nothing
+	Call ConnectToServer("PegasePro.Application.1", pegaseApp)
+
+    Dim captureApp
+	Set captureApp = CreateObject("ProgResCamStudio.Document")
+
+    Dim ahm_opticalsystem
+    
+	If Not pegaseApp Is Nothing Then
+
+		If Not ahm_service Is Nothing Then
+			status = ahm_service.Connect("DEMO-DM6000B")
+			If status = True Then
+				Dim ahm_unit
+				Set ahm_unit = ahm_service.GetBasicControl("MICROSCOPE_MOTORZOOM")
+				If Not ahm_unit Is Nothing Then
+					nObjectiveIndex = ahm_unit.ControlValue
+					Dim ahm_opticalsystems
+					On Error Resume Next    ' Retarde la récupération d'erreur.
+					Set ahm_opticalsystems = ahm_service.LoadOpticalSystems("opticalsystems.xml")
+					If Not ahm_opticalsystems Is Nothing Then
+						On Error Resume Next    ' Retarde la récupération d'erreur.
+						Set ahm_opticalsystem = ahm_opticalsystems.Item(nObjectiveIndex)
+						If Not ahm_opticalsystem Is Nothing Then
+							Set opticalSystems = pegaseApp.opticalSystems
+							If Not opticalSystems Is Nothing Then
+								'Select the desired optical system
+								opticalSystems.SetCurrentSystem (ahm_opticalsystem.SystemName)
+								Set currentSystem = opticalSystems.CurrentSystem
+								If Not currentSystem Is Nothing Then
+									currentSystem.SetCurrentOptical(ahm_opticalsystem.ObjectiveName)
+									On Error Resume Next    ' Retarde la récupération d'erreur.
+									WshShell.Popup ahm_opticalsystem.SystemName & " - " & ahm_opticalsystem.ObjectiveName & " - done.", 120, "AHM Sync Pegase Pro Current Optical System", 0
+								End If
+							End If
+						End If
+					End If
+                Else
+                    WshShell.Popup "Can't connect MICROSCOPE_MOTORZOOM unit.", 120, "ahm_tools.Service : ERROR ", 0
+                End If
+            Else
+               WshShell.Popup "Can't connect to LEICA Device.", 120, "ahm_tools.Service : ERROR ", 0
+			End If
+		End If
+		
+        If Not captureApp Is Nothing Then
+            Set pgInsertDialogBox = pegaseApp.GetDocInsertDialogBox
+            If Not pgInsertDialogBox Is Nothing Then
+                If pgInsertDialogBox.Execute() = 1 Then
+                    Set pgFormTemplate = pgInsertDialogBox.GetFormTemplate
+                    If Not pgFormTemplate Is Nothing Then
+                        filePath = objet_fso.BuildPath(objet_fso.GetSpecialFolder(2), "image.bmp")
+                        WshShell.Popup filePath, 120, "Source path", 0
+                        status = captureApp.GetImage(filePath)
+                        If status = True Then
+                            Set pgDocument = pegaseApp.CreateDocumentEx(pgFormTemplate, filePath)
+                            If Not pgDocument Is Nothing Then
+                               ' Insert a graphical scale in the image of the document file
+                                pgDocument.InsertScale ahm_opticalsystem.SystemName, ahm_opticalsystem.ObjectiveName
+                                Set pgActiveSecion = pegaseApp.ActiveSection
+                                If Not pgActiveSecion Is Nothing Then
+                                    pgActiveSecion.AddDocument pgDocument
+                                End If
+                            End If
+                        End If
+                        objet_fso.DeleteFile filePath
+                        pegaseApp.RefreshActiveSection
+                    End If
+                End If
+            End If
+        End If
+
+	End If
+
+	Sub ConnectToServer(progId, server)
+		On Error Resume Next
+		Set server = GetObject(, progId)
+    	If server Is Nothing Then
+            Dim msg 
+            msg = progId & vbCr
+            msg = msg & Err.Description & vbCr
+            WshShell.Popup msg, 20, "AHM Send to PegasePro", 0
+        End If
+	End Sub
+
+	</script>
+
+</job>

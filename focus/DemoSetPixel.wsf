@@ -1,0 +1,44 @@
+<job id="main">
+	<script language="VBScript">
+    Dim saxoServer, saxoServerWasNotRunning
+    Call ConnectToServer("SaxoSvr.Application.1", saxoServer, pegaseAppWasNotRunning)
+    
+    Dim ddServer, diademServerWasNotRunning
+    Call ConnectToServer("Ddserver.Application.1", ddServer, diademServerWasNotRunning)
+    
+    If ddServer.ipImageNew("mybuffer", 256, 256, "UINT8") = True Then
+       WScript.Echo "Build the Test Image...."
+       For ixLine = 16 To 255 Step 16
+            For ixCol = 4 To 255 Step 4
+                ddServer.ipSetPixel "mybuffer", ixCol, ixLine, 255
+            Next
+        Next
+       For ixLine = 4 To 255 Step 4
+            For ixCol = 16 To 255 Step 16
+                ddServer.ipSetPixel "mybuffer", ixCol, ixLine, 255
+            Next
+        Next
+        '   Visualisation des résultats
+        ddServer.ipExportBuffer "mybuffer", "C:\result.bmp"
+        saxoServer.Load "C:\result.bmp", "ipSetPixel demo"
+       WScript.Echo "Test Image builded."
+    End If
+    
+    saxoServer.TileVertical
+    saxoServer.StretchToWindow True
+        
+    If diademServerWasNotRunning = True Then ddServer.Quit
+
+	Sub ConnectToServer(progId, server, serverWasNotRunning)
+		' Test pour déterminer si une copie du Server est déjà en exécution.
+		On Error Resume Next    ' Retarde la récupération d'erreur.
+		' La fonction Getobject appelée sans le premier argument renvoie une référence à une occurrence de
+		' l'application. Si l'application n'est pas en exécution, une erreur se produit. Notez la virgule
+		' utilisée en tant que premier espace réservé d'argument.
+		Set server = GetObject(, progId)
+		If Err.Number <> 0 Then serverWasNotRunning = True
+		Err.Clear   ' Efface l'objet Err si une erreur s'est produite.
+		If serverWasNotRunning = True Then Set server = CreateObject(progId)
+	End Sub
+	</script>
+</job>

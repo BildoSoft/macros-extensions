@@ -1,0 +1,99 @@
+<job id="main">
+	<script language="VBScript">
+    Dim pegaseApp, pegaseAppWasNotRunning
+    Call ConnectToServer("PegasePro.Application.1", pegaseApp, pegaseAppWasNotRunning)
+    
+    Dim oberonApp, oberonServerWasNotRunning
+    Call ConnectToServer("Oberon.Document", oberonApp, oberonServerWasNotRunning)
+    
+    Set WshShell = WScript.CreateObject("WScript.Shell")
+   
+    If Not oberonApp Is Nothing Then
+
+        oberonApp.Clear true, true
+        oberonApp.SetCaption "Pegase Pro Active Documents"
+
+      '  Set items = CreateObject("Oberon.Items")
+        Set gridCell = CreateObject("Oberon.GridCell")
+        Set gridCollect = CreateObject("Oberon.GridCollection")
+
+  '      WshShell.Popup "items[0]" & items(0), 3, "Command:", 0
+        
+        WshShell.Popup "Insert selection from Pegase Pro", 3, "Command:", 0
+        Set pegaseSelections = pegaseApp.ActiveDocuments
+        For Each pegaseDocument In pegaseSelections
+            gridCell.Value = pegaseDocument.FullName
+            gridCell.RowNo = gridCell.RowNo + 1
+            gridCell.ColNo = gridCell.ColNo + 1
+            oberonApp.AddGridItem gridCell
+            gridCell.ColNo = gridCell.ColNo + 1
+            oberonApp.AddGridItem gridCell
+            gridCell.ColNo = gridCell.ColNo + 1
+            oberonApp.AddGridItem gridCell
+            gridCell.ColNo = -1
+       Next
+
+'       Set one header caption with Oberon.GridCell object.
+        WshShell.Popup "Set one header column 0", 3, "Command:", 0
+        gridCell.ColNo = 0
+        gridCell.Value = "Header 0" 
+        oberonApp.SetGridHeader gridCell
+        oberonApp.ShowGridHeader false, true
+         
+'       Set several header captions with Oberon.GridCollection object.
+        WshShell.Popup "Set several header column", 3, "Command:", 0
+        For ix = 1 To 4
+            gridCell.ColNo = ix
+            gridCell.Value = "Header " & ix
+            gridCollect.Add gridCell
+        Next
+        oberonApp.SetGridHeader gridCollect
+
+        ' Insert a column
+        WshShell.Popup "Insert a column at index = 2", 3, "Command:", 0
+        Set gridColumn = CreateObject("Oberon.GridColumn")
+        gridColumn.ColNo = 2
+        oberonApp.AddGridItem gridColumn
+  
+        ' Insert a row
+        WshShell.Popup "Insert a row at index = 1", 3, "Command:", 0
+        Set gridRow = CreateObject("Oberon.GridRow")
+        gridRow.RowNo = 1
+        oberonApp.AddGridItem gridRow
+             
+        ' Swap columns
+        WshShell.Popup "Swap first and last columns", 3, "Command:", 0
+        Set gridColumn1 = CreateObject("Oberon.GridColumn")
+        Set gridColumn2 = CreateObject("Oberon.GridColumn")
+        gridColumn1.ColNo = 0
+        gridColumn2.ColNo = oberonApp.GetGridColumnCount - 1
+        oberonApp.SwapGridItem gridColumn1, gridColumn2
+  
+        ' Swap rows
+        WshShell.Popup "Swap first and last rows", 3, "Command:", 0
+        Set gridRow1 = CreateObject("Oberon.GridRow")
+        Set gridRow2 = CreateObject("Oberon.GridRow")
+        gridRow1.RowNo = 0
+        gridRow2.RowNo = oberonApp.GetGridRowCount - 1
+        oberonApp.SwapGridItem gridRow1, gridRow2
+  
+        ' Swap column and row
+        WshShell.Popup "Swap first row and last column", 3, "Command:", 0
+        gridRow1.RowNo = 0
+        gridColumn1.ColNo = oberonApp.GetGridColumnCount - 1
+        oberonApp.SwapGridItem gridColumn1, gridRow1     
+   End If
+
+	Sub ConnectToServer(progId, server, serverWasNotRunning)
+		' Test pour déterminer si une copie du Server est déjà en exécution.
+		On Error Resume Next    ' Retarde la récupération d'erreur.
+		' La fonction Getobject appelée sans le premier argument renvoie une référence à une occurrence de
+		' l'application. Si l'application n'est pas en exécution, une erreur se produit. Notez la virgule
+		' utilisée en tant que premier espace réservé d'argument.
+		Set server = GetObject(, progId)
+		If Err.Number <> 0 Then serverWasNotRunning = True
+		Err.Clear   ' Efface l'objet Err si une erreur s'est produite.
+		If serverWasNotRunning = True Then Set server = CreateObject(progId)
+	End Sub
+	</script>
+</job>
